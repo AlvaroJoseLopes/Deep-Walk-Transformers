@@ -1,0 +1,18 @@
+import setuptools
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setuptools.setup(
+    name='deep-walk-transformers',
+    version='0.0.0',
+    author='',
+    author_email='',
+    description='Deep Walk Transformers Model',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url='https://github.com/AlvaroJoseLopes/Deep-Walk-Transformers',
+    license='MIT',
+    packages=['toolbox'],
+    install_requires=[]
+)
