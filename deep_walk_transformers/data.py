@@ -2,7 +2,7 @@ import walker
 import tqdm
 import networkx as nx
 import numpy as np
-from utils.data_preparation import *
+from deep_walk_transformers.utils.data_preparation import *
 
 class Dataset():
     """
