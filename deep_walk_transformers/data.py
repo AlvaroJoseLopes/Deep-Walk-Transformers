@@ -1,5 +1,5 @@
 import walker
-import tqdm
+from tqdm.notebook import tqdm
 import networkx as nx
 import numpy as np
 from deep_walk_transformers.utils.data_preparation import *
@@ -44,10 +44,12 @@ class Dataset():
         walks = walker.random_walks(
             G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=start_nodes
         )
+        print(f'Walks shape: {walks.shape}')
 
         X_paths = []
         X_positions = []
 
+        print(f'Building X_paths and X_positions ...')
         for walk in tqdm(walks):
             node_target = walk[0] 
             node_positions = []
