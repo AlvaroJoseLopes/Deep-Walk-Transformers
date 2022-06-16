@@ -82,7 +82,7 @@ class Dataset():
         mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
 
         print('Encoding texts ...')
-        encoded_paths = encode(self.X_paths, vectorize_layer)
+        encoded_paths = encode(self.X_paths_str, vectorize_layer)
 
         print('Getting masked input')
         return get_masked_input_and_labels(
