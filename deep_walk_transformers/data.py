@@ -17,7 +17,8 @@ class Dataset():
         self.n_walks = n_walks
         self.walk_len = walk_len
         self.mask_rate = mask_rate
-        self.X_paths = []
+        self.X_paths = []       # [['node_1', 'node_2']]
+        self.X_paths_str = []   # ['node_1 node_2']
         self.X_positions = []
 
     def build(
@@ -49,8 +50,7 @@ class Dataset():
         X_paths = []
         X_positions = []
 
-        print(f'Building X_paths and X_positions ...')
-        for walk in tqdm(walks):
+        for walk in tqdm(walks, desc='Building X_paths and X_positions'):
             node_target = walk[0] 
             node_positions = []
             for node in walk:
@@ -64,20 +64,27 @@ class Dataset():
         self.X_paths = np.array(
             list(map(lambda path: list(map(lambda node: f'node_{str(node)}', path)), X_paths))
         )
+        self.X_paths_str = np.array(
+            list(map(lambda x: ' '.join(x), self.X_paths))
+        )
         self.X_positions = np.array(X_positions)
 
 
     def _prepare(self, vocab_size, mask_rate = 0.5, standardize=None):
+        print('Getting Vectorize Layer ...')
         vectorize_layer = get_vectorize_layer(
-            self.X_paths,
+            self.X_paths_str,
             vocab_size,
             self.walk_len,
             special_tokens=["[mask]"],
             standardize=standardize
         )
         mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
+
+        print('Encoding texts ...')
         encoded_paths = encode(self.X_paths, vectorize_layer)
-        # x_masked_train, y_masked_labels, sample_weights = 
+
+        print('Getting masked input')
         return get_masked_input_and_labels(
             encoded_paths, mask_token_id, mask_rate
         )

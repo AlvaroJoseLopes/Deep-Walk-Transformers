@@ -38,8 +38,6 @@ def encode(texts, vectorize_layer):
 def get_masked_input_and_labels(encoded_texts, mask_token_id, mask_rate=0.5):
     # 15% BERT masking
     inp_mask = np.random.rand(*encoded_texts.shape) <= mask_rate # 50% tokens (aqui pode ser um parametro MLM mask)
-    print("Printando inp_mask: ")
-    print(inp_mask)
     # Do not mask special tokens
     inp_mask[encoded_texts <= 2] = False
     # Set targets to -1 by default, it means ignore
@@ -55,8 +53,6 @@ def get_masked_input_and_labels(encoded_texts, mask_token_id, mask_rate=0.5):
     encoded_texts_masked[
         inp_mask_2mask
     ] = mask_token_id  # mask token is the last in the dict
-    print("Printando inp_mask_2mask: ")
-    print(inp_mask_2mask)
 
 
 
