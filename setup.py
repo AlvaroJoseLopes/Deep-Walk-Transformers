@@ -13,6 +13,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url='https://github.com/AlvaroJoseLopes/Deep-Walk-Transformers',
     license='MIT',
-    packages=['toolbox'],
+    packages=['deep-walk-transformers'],
     install_requires=[]
 )
