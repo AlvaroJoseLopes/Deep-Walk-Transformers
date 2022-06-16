@@ -55,7 +55,7 @@ class Dataset():
             node_positions = []
             for node in walk:
                 node_positions.append(
-                    nx.shortest_path_length(self.G, source=node_target, target=node)
+                    nx.shortest_path_length(G, source=node_target, target=node)
                 )
             
             X_paths.append(walk)
