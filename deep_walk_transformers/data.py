@@ -17,9 +17,11 @@ class Dataset():
         self.n_walks = n_walks
         self.walk_len = walk_len
         self.mask_rate = mask_rate
-        self.X_paths = []       # [['node_1', 'node_2']]
-        self.X_paths_str = []   # ['node_1 node_2']
+        self.mask_token_id = None
+        self.X_paths = []       # [['node_1', 'node_2'], [...], ...]
+        self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
+
 
     def build(
         self,
@@ -79,12 +81,12 @@ class Dataset():
             special_tokens=["[mask]"],
             standardize=standardize
         )
-        mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
+        self.mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
 
         print('Encoding texts ...')
         encoded_paths = encode(self.X_paths_str, vectorize_layer)
 
-        print('Getting masked input')
+        print(f'Getting masked input (mask token id = {self.mask_token_id}) ...')
         return get_masked_input_and_labels(
-            encoded_paths, mask_token_id, mask_rate
+            encoded_paths, self.mask_token_id, mask_rate
         )
