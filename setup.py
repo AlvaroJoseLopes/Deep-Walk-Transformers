@@ -14,5 +14,5 @@ setuptools.setup(
     url='https://github.com/AlvaroJoseLopes/Deep-Walk-Transformers',
     license='MIT',
     packages=['deep_walk_transformers'],
-    install_requires=[]
+    install_requires=['graph-walker']
 )
