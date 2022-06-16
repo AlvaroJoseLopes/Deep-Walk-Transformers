@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='deep-walk-transformers',
+    name='deep_walk_transformers',
     version='0.0.0',
     author='',
     author_email='',
@@ -13,6 +13,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url='https://github.com/AlvaroJoseLopes/Deep-Walk-Transformers',
     license='MIT',
-    packages=['deep-walk-transformers'],
+    packages=['deep_walk_transformers'],
     install_requires=[]
 )

@@ -79,13 +79,3 @@ class Dataset():
         return get_masked_input_and_labels(
             encoded_paths, mask_token_id, mask_rate
         )
-
-    
-
-
-
-
-
-
-
-
