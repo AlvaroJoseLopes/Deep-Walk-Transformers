@@ -6,7 +6,7 @@ from deep_walk_transformers.utils.data_preparation import *
 
 class Dataset():
     """
-    Builds Dataset for fake training
+        Dataset for fake training
     """
     def __init__(
         self,
@@ -14,6 +14,7 @@ class Dataset():
         walk_len = 10,
         mask_rate = 0.15
     ):
+
         self.n_walks = n_walks
         self.walk_len = walk_len
         self.mask_rate = mask_rate
@@ -21,6 +22,7 @@ class Dataset():
         self.X_paths = []       # [['node_1', 'node_2'], [...], ...]
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
+        self.mlm_ds = None
 
 
     def build(
@@ -31,19 +33,23 @@ class Dataset():
         standardize=None, 
         batch_size=128
     ):
+        """
+            Builds MLM dataset for fake training.
+        """
         self._walk(G, start_nodes)
         x_masked_train, y_masked_labels, sample_weights = self._prepare(
             G.number_of_nodes(), mask_rate, standardize
         )
 
-        mlm_ds = tf.data.Dataset.from_tensor_slices(
+        self.mlm_ds = tf.data.Dataset.from_tensor_slices(
             (x_masked_train, self.X_positions, y_masked_labels, sample_weights)
         )
 
-        return mlm_ds.shuffle(1000).batch(batch_size)
+        return self.mlm_ds.shuffle(1000).batch(batch_size)
 
 
     def _walk(self, G, start_nodes=None):
+
         walks = walker.random_walks(
             G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=start_nodes
         )
@@ -73,6 +79,7 @@ class Dataset():
 
 
     def _prepare(self, vocab_size, mask_rate = 0.5, standardize=None):
+        
         print('Getting Vectorize Layer ...')
         vectorize_layer = get_vectorize_layer(
             self.X_paths_str,
