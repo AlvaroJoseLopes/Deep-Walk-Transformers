@@ -1,5 +1,5 @@
-from data import Dataset
-from model import MLMBertModel
+from .data import Dataset
+from .model import MLMBertModel
 
 class DeepWalkTransformers():
     """
