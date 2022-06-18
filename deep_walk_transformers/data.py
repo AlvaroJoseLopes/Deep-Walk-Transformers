@@ -22,13 +22,14 @@ class Dataset():
         self.X_paths = []       # [['node_1', 'node_2'], [...], ...]
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
+        self.encoded_paths = None
         self.mlm_ds = None
 
 
     def build(
         self,
         G, 
-        start_nodes=None, 
+        starting_nodes=None, 
         mask_rate=0.5, 
         standardize=None, 
         batch_size=128
@@ -36,7 +37,7 @@ class Dataset():
         """
             Builds MLM dataset for fake training.
         """
-        self._walk(G, start_nodes)
+        self._walk(G, starting_nodes)
         x_masked_train, y_masked_labels, sample_weights = self._prepare(
             G.number_of_nodes(), mask_rate, standardize
         )
@@ -44,14 +45,15 @@ class Dataset():
         self.mlm_ds = tf.data.Dataset.from_tensor_slices(
             (x_masked_train, self.X_positions, y_masked_labels, sample_weights)
         )
+        self.mlm_ds = self.mlm_ds.shuffle(1000).batch(batch_size)
 
-        return self.mlm_ds.shuffle(1000).batch(batch_size)
+        return self.mlm_ds
 
 
-    def _walk(self, G, start_nodes=None):
+    def _walk(self, G, starting_nodes=None):
 
         walks = walker.random_walks(
-            G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=start_nodes
+            G, n_walks=self.n_walks, walk_len=self.walk_len, starting_nodes=starting_nodes
         )
         print(f'Walks shape: {walks.shape}')
 
@@ -79,7 +81,7 @@ class Dataset():
 
 
     def _prepare(self, vocab_size, mask_rate = 0.5, standardize=None):
-        
+
         print('Getting Vectorize Layer ...')
         vectorize_layer = get_vectorize_layer(
             self.X_paths_str,
@@ -91,9 +93,15 @@ class Dataset():
         self.mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
 
         print('Encoding texts ...')
-        encoded_paths = encode(self.X_paths_str, vectorize_layer)
+        self.encoded_paths = encode(self.X_paths_str, vectorize_layer)
 
         print(f'Getting masked input (mask token id = {self.mask_token_id}) ...')
         return get_masked_input_and_labels(
-            encoded_paths, self.mask_token_id, mask_rate
+            self.encoded_paths, self.mask_token_id, mask_rate
         )
+    
+    def get_encoded_paths(self):
+        return self.encoded_paths_
+    
+    def get_Xpositions(self):
+        return self.X_positions
