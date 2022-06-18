@@ -33,7 +33,7 @@ class MLMBertModel():
     
     def train(self, mlm_ds, epochs = 5):
         print(f'Training model for {epochs} epochs ...')
-        self.mlm_model.fit(mlm_ds, epochs)
+        self.mlm_model.fit(mlm_ds, epochs=epochs)
     
     def get_node_embeddings(self, encoded_paths, X_positions):
         self.classifier = self._create_classifier()
