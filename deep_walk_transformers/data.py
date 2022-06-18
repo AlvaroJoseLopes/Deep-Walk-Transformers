@@ -53,7 +53,7 @@ class Dataset():
     def _walk(self, G, starting_nodes=None):
 
         walks = walker.random_walks(
-            G, n_walks=self.n_walks, walk_len=self.walk_len, starting_nodes=starting_nodes
+            G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=starting_nodes
         )
         print(f'Walks shape: {walks.shape}')
 
