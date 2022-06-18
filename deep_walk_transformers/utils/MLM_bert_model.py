@@ -121,10 +121,4 @@ class MaskedLanguageModel(tf.keras.Model):
         # or at the start of `evaluate()`.
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
-        return [loss_tracker]
-
-
-
-
-bert_masked_model = create_masked_language_bert_model()
-bert_masked_model.summary()
+        return [self.loss_tracker]
