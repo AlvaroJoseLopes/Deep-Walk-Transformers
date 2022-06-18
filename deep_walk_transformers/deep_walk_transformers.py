@@ -35,10 +35,9 @@ class DeepWalkTransformers():
         )
 
         # Build BERT MODEL
-        if self.mlm_model != None: 
-            self.mlm_model = MLMBertModel()
-            print('Building Masked Language Bert Model ...')
-            self.mlm_model.build()
+        self.mlm_model = MLMBertModel()
+        print('Building Masked Language Bert Model ...')
+        self.mlm_model.build()
         
         print('Fake Training MLM model ... ')
         self.mlm_model.train(self.mlm_ds, epochs)
@@ -47,3 +46,6 @@ class DeepWalkTransformers():
         return self.mlm_model.get_node_embeddings(
             self.dataset.get_encoded_paths, self.dataset.get_Xpositions
         )
+    
+    def get_clasifier(self):
+        return self.mlm_model.get_classifier()

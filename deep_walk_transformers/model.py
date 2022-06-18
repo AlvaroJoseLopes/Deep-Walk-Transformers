@@ -36,8 +36,11 @@ class MLMBertModel():
         self.mlm_model.fit(mlm_ds, epochs)
     
     def get_node_embeddings(self, encoded_paths, X_positions):
-        classifier = self._create_classifier()
-        return classifier.predict([encoded_paths, X_positions])
+        self.classifier = self._create_classifier()
+        return self.classifier.predict([encoded_paths, X_positions])
+
+    def get_classifier(self):
+        return self.classifier
 
     def _create_classifier(self):
         pretrained_model = tf.keras.Model(
@@ -49,9 +52,9 @@ class MLMBertModel():
         inputs2 = layers.Input((self.max_len,), dtype=tf.int64)
         sequence_output = pretrained_model([inputs,inputs2])
         outputs = layers.GlobalAveragePooling1D()(sequence_output)
-        self.classifier = keras.Model([inputs,inputs2], outputs, name="classification")
+        classifier = keras.Model([inputs,inputs2], outputs, name="classification")
 
-        return self.classifier
+        return classifier
 
         
 
