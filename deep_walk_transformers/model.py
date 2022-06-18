@@ -28,7 +28,7 @@ class MLMBertModel():
     def build(self):
         self.mlm_model = create_masked_language_bert_model(
             self.max_len, self.vocab_size, self.embed_dim,
-            self.num_layers, self.lr
+            self.num_layers, self.lr, self.num_head, self.ff_dim
         )
     
     def train(self, mlm_ds, epochs = 5):

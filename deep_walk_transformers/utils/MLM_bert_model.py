@@ -3,7 +3,10 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
-def create_masked_language_bert_model(max_len, vocab_size, embed_dim, num_layers, lr):
+def create_masked_language_bert_model(
+    max_len, vocab_size, embed_dim, num_layers, lr,
+    num_head, ff_dim
+):
     inputs = layers.Input((max_len,), dtype=tf.int64)
     inputs2 = layers.Input((max_len,), dtype=tf.int64)
 
@@ -21,7 +24,10 @@ def create_masked_language_bert_model(max_len, vocab_size, embed_dim, num_layers
 
     encoder_output = embeddings
     for i in range(num_layers):
-        encoder_output = bert_module(encoder_output, encoder_output, encoder_output, i)
+        encoder_output = bert_module(
+            encoder_output, encoder_output, encoder_output, i,
+            num_head, embed_dim, ff_dim
+        )
 
     mlm_output = layers.Dense(vocab_size, name="mlm_cls", activation="softmax")(
         encoder_output
