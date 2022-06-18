@@ -8,12 +8,12 @@ class MLMBertModel():
     def __init__(
         self,
         num_head,
-        embed_dim,
         ff_dim,
         max_len,
-        num_layers,
         vocab_size,
-        lr       
+        embed_dim = 32,
+        num_layers = 1,
+        lr = 0.0001      
     ):
         self.num_head = num_head
         self.embed_dim = embed_dim
