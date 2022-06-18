@@ -32,7 +32,7 @@ class DeepWalkTransformers():
     ):
 
         # Build MLM dataset for fake training
-        self.dataset = Dataset(self.n_walks, self.walk_len, self.mask_rate)
+        self.dataset = Dataset(self.num_walks, self.walk_len, self.mask_rate)
         self.mlm_ds = self.dataset.build(
             G, starting_nodes, self.mask_rate, standardize=None, batch_size=batch_size
         )
