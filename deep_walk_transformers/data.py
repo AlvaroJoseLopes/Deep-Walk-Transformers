@@ -19,7 +19,7 @@ class Dataset():
         self.walk_len = walk_len
         self.mask_rate = mask_rate
         self.mask_token_id = None
-        self.X_paths = []       # [['node_1', 'node_2'], [...], ...]
+        self.X_paths = []       # [[1,2], [...], ...]
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
         self.encoded_paths = None
@@ -70,13 +70,16 @@ class Dataset():
             
             X_paths.append(walk)
             X_positions.append(node_positions)
+
+        self.X_paths = X_paths
         
-        self.X_paths = np.array(
+        tmp = np.array(
             list(map(lambda path: list(map(lambda node: f'node_{str(node)}', path)), X_paths))
-        )
+        ) # [['node_1', 'node_2']]
         self.X_paths_str = np.array(
-            list(map(lambda x: ' '.join(x), self.X_paths))
-        )
+            list(map(lambda x: ' '.join(x), tmp))
+        ) # ['node_1 node_2', ...]
+
         self.X_positions = np.array(X_positions)
 
 
@@ -105,3 +108,6 @@ class Dataset():
     
     def get_Xpositions(self):
         return self.X_positions
+    
+    def get_Xpaths(self):
+        return self.X_paths

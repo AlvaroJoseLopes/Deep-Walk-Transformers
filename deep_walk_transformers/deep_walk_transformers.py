@@ -56,5 +56,8 @@ class DeepWalkTransformers():
             self.dataset.get_encoded_paths, self.dataset.get_Xpositions
         )
     
-    def get_clasifier(self):
+    def get_classifier(self):
         return self.mlm_model.get_classifier()
+
+    def get_Xpaths(self):
+        return self.mlm_ds.get_Xpaths()
