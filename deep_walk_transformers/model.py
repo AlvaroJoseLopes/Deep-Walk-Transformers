@@ -35,7 +35,7 @@ class MLMBertModel():
         print(f'Training model for {epochs} epochs ...')
         self.mlm_model.fit(mlm_ds, epochs=epochs)
     
-    def get_node_embeddings(self, encoded_paths, X_positions):
+    def get_path_embeddings(self, encoded_paths, X_positions):
         self.classifier = self._create_classifier()
         return self.classifier.predict([encoded_paths, X_positions])
 

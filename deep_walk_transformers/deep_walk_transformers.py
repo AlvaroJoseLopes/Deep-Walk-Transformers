@@ -1,5 +1,7 @@
 from .data import Dataset
 from .model import MLMBertModel
+from collections import defaultdict
+import numpy as np
 
 class DeepWalkTransformers():
     """
@@ -50,14 +52,30 @@ class DeepWalkTransformers():
         
         print('Fake Training MLM model ... ')
         self.mlm_model.train(self.mlm_ds, epochs)
-
-    def get_embeddings(self):
-        return self.mlm_model.get_node_embeddings(
-            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
-        )
     
+    def get_embeddings(self):
+        paths_embeddings = self._get_paths_embeddings()
+        X_paths = self.get_Xpaths()
+
+        target_node = 0 # pode ser um parametro?
+        node_embeddings = defaultdict(list)
+        for walk_index, path in enumerate(X_paths):
+            node_embeddings[path[target_node]].append(paths_embeddings[walk_index])
+        
+        for target_node in node_embeddings.keys():
+            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
+        
+        return node_embeddings       
+
+    # Some public functions that may be useful funções adicionais que podem ser útil
     def get_classifier(self):
         return self.mlm_model.get_classifier()
 
     def get_Xpaths(self):
         return self.dataset.get_Xpaths()
+
+    # 'Private' functions        
+    def _get_paths_embeddings(self):
+        return self.mlm_model.get_path_embeddings(
+            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
+        )
