@@ -2,6 +2,7 @@
 Node embedding technique based on Masked Language Model.
 
 **A simple example**
+----------------------------------------------------------------
 
 You can experiment very easily:
 
@@ -19,4 +20,3 @@ node_embeddings = dwt.get_embeddings()
 ```
 
 See `notebooks` directory for a more complete example.
-----------------------------------------------------------------
