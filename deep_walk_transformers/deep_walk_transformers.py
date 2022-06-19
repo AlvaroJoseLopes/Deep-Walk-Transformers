@@ -60,4 +60,4 @@ class DeepWalkTransformers():
         return self.mlm_model.get_classifier()
 
     def get_Xpaths(self):
-        return self.mlm_ds.get_Xpaths()
+        return self.dataset.get_Xpaths()
