@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='deep_walk_transformers',
-    version='0.0.7',
+    version='0.1.0',
     author='',
     author_email='',
     description='Deep Walk Transformers Model',

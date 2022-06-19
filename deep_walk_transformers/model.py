@@ -32,7 +32,6 @@ class MLMBertModel():
         )
     
     def train(self, mlm_ds, epochs = 5):
-        print(f'Training model for {epochs} epochs ...')
         self.mlm_model.fit(mlm_ds, epochs=epochs)
     
     def get_path_embeddings(self, encoded_paths, X_positions):
