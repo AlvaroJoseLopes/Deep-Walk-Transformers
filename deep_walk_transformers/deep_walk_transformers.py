@@ -53,7 +53,7 @@ class DeepWalkTransformers():
 
     def get_embeddings(self):
         return self.mlm_model.get_node_embeddings(
-            self.dataset.get_encoded_paths, self.dataset.get_Xpositions
+            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
         )
     
     def get_classifier(self):
