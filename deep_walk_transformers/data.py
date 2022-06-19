@@ -104,7 +104,7 @@ class Dataset():
         )
     
     def get_encoded_paths(self):
-        return self.encoded_paths_
+        return self.encoded_paths
     
     def get_Xpositions(self):
         return self.X_positions
