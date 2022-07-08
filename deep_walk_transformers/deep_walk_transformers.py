@@ -67,7 +67,7 @@ class DeepWalkTransformers():
         
         return node_embeddings       
 
-    # Some public functions that may be useful funções adicionais que podem ser útil
+    # Some public functions that may be useful
     def get_classifier(self):
         return self.mlm_model.get_classifier()
 
