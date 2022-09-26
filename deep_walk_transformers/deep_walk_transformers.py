@@ -53,7 +53,7 @@ class DeepWalkTransformers():
         print('Fake Training MLM model ... ')
         self.mlm_model.train(self.mlm_ds, epochs)
     
-    def get_embeddings(self):
+    def get_transductive_embeddings(self):
         paths_embeddings = self._get_paths_embeddings()
         X_paths = self.get_Xpaths()
 
