@@ -24,6 +24,8 @@ class Dataset():
         self.X_positions = []
         self.encoded_paths = None
         self.mlm_ds = None
+        self.G_copy = None
+        self.old_mapping = None
 
 
     def build(
@@ -37,7 +39,10 @@ class Dataset():
         """
             Builds MLM dataset for fake training.
         """
-        self._walk(G, starting_nodes)
+        self.G_copy = G.copy()
+        self.G_copy = nx.convert_node_labels_to_integers(self.G_copy, label_attribute='old')
+        self.old_mapping = nx.get_node_attributes(self.G_copy, 'old')
+        self._walk(self.G_copy, starting_nodes)
         x_masked_train, y_masked_labels, sample_weights = self._prepare(
             G.number_of_nodes(), mask_rate, standardize
         )
@@ -129,6 +134,8 @@ class InductiveDataset():
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
         self.encoded_paths = None
+        self.G_copy = None
+        self.old_mapping = None
 
 
     def build(
@@ -140,7 +147,10 @@ class InductiveDataset():
         """
             Builds Random Walk paths and X_positions
         """
-        self._walk(G, starting_nodes)
+        self.G_copy = G.copy()
+        self.G_copy = nx.convert_node_labels_to_integers(self.G_copy, label_attribute='old')
+        self.old_mapping = nx.get_node_attributes(self.G_copy, 'old')
+        self._walk(self.G_copy, starting_nodes)
         x_masked_train, y_masked_labels, sample_weights = self._prepare(
             G.number_of_nodes(), standardize
         )
