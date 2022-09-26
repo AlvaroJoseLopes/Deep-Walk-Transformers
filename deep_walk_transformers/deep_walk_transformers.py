@@ -1,4 +1,4 @@
-from .data import Dataset
+from .data import Dataset, InductiveDataset
 from .model import MLMBertModel
 from collections import defaultdict
 import numpy as np
@@ -54,8 +54,10 @@ class DeepWalkTransformers():
         self.mlm_model.train(self.mlm_ds, epochs)
     
     def get_transductive_embeddings(self):
-        paths_embeddings = self._get_paths_embeddings()
-        X_paths = self.get_Xpaths()
+        paths_embeddings = self.mlm_model.get_path_embeddings(
+            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
+        )
+        X_paths = self.dataset.get_Xpaths()
 
         target_node = 0
         node_embeddings = defaultdict(list)
@@ -65,17 +67,35 @@ class DeepWalkTransformers():
         for target_node in node_embeddings.keys():
             node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
         
-        return node_embeddings       
+        return node_embeddings
+
+    def get_inductive_embeddings(self, G, starting_nodes):
+        inductive_ds = InductiveDataset(self.n_walks, self.walk_len)
+        encoded_paths, X_positions = inductive_ds.build(G, starting_nodes)
+        paths_embeddings = self.mlm_model.get_path_embeddings(
+           encoded_paths, X_positions
+        )
+        X_paths = inductive_ds.get_Xpaths()
+
+        target_node = 0
+        node_embeddings = defaultdict(list)
+        for walk_index, path in enumerate(X_paths):
+            node_embeddings[path[target_node]].append(paths_embeddings[walk_index])
+        
+        for target_node in node_embeddings.keys():
+            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
+        
+        return node_embeddings
 
     # Some public functions that may be useful
     def get_classifier(self):
         return self.mlm_model.get_classifier()
 
-    def get_Xpaths(self):
-        return self.dataset.get_Xpaths()
+    # def get_Xpaths(self):
+    #     return self.dataset.get_Xpaths()
 
-    # 'Private' functions        
-    def _get_paths_embeddings(self):
-        return self.mlm_model.get_path_embeddings(
-            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
-        )
+    # # 'Private' functions        
+    # def _get_paths_embeddings(self):
+    #     return self.mlm_model.get_path_embeddings(
+    #         self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
+    #     )
