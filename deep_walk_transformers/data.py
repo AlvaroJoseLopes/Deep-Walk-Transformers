@@ -111,3 +111,96 @@ class Dataset():
     
     def get_Xpaths(self):
         return self.X_paths
+
+
+class InductiveDataset():
+    """
+        Dataset for fake training
+    """
+    def __init__(
+        self,
+        n_walks = 50,
+        walk_len = 10,
+    ):
+
+        self.n_walks = n_walks
+        self.walk_len = walk_len
+        self.X_paths = []       # [[1,2], [...], ...]
+        self.X_paths_str = []   # ['node_1 node_2', '...', ...]
+        self.X_positions = []
+        self.encoded_paths = None
+
+
+    def build(
+        self,
+        G, 
+        starting_nodes, 
+        standardize=None, 
+    ):
+        """
+            Builds Random Walk paths and X_positions
+        """
+        self._walk(G, starting_nodes)
+        x_masked_train, y_masked_labels, sample_weights = self._prepare(
+            G.number_of_nodes(), standardize
+        )
+
+        return self.encoded_paths, self.X_positions
+
+
+    def _walk(self, G, starting_nodes):
+
+        walks = walker.random_walks(
+            G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=starting_nodes
+        )
+        print(f'Walks shape: {walks.shape}')
+
+        X_paths = []
+        X_positions = []
+
+        for walk in tqdm(walks, desc='Building X_paths and X_positions'):
+            node_target = walk[0] 
+            node_positions = []
+            for node in walk:
+                node_positions.append(
+                    nx.shortest_path_length(G, source=node_target, target=node)
+                )
+            
+            X_paths.append(walk)
+            X_positions.append(node_positions)
+
+        self.X_paths = X_paths
+        
+        tmp = np.array(
+            list(map(lambda path: list(map(lambda node: f'node_{str(node)}', path)), X_paths))
+        ) # [['node_1', 'node_2']]
+        self.X_paths_str = np.array(
+            list(map(lambda x: ' '.join(x), tmp))
+        ) # ['node_1 node_2', ...]
+
+        self.X_positions = np.array(X_positions)
+
+
+    def _prepare(self, vocab_size, standardize=None):
+
+        print('Getting Vectorize Layer ...')
+        vectorize_layer = get_vectorize_layer(
+            self.X_paths_str,
+            vocab_size,
+            self.walk_len,
+            special_tokens=["[mask]"],
+            standardize=standardize
+        )
+        self.mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
+
+        print('Encoding texts ...')
+        self.encoded_paths = encode(self.X_paths_str, vectorize_layer)
+    
+    def get_encoded_paths(self):
+        return self.encoded_paths
+    
+    def get_Xpositions(self):
+        return self.X_positions
+    
+    def get_Xpaths(self):
+        return self.X_paths
