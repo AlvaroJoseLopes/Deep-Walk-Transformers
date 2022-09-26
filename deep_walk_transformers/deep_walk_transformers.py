@@ -57,7 +57,7 @@ class DeepWalkTransformers():
         paths_embeddings = self._get_paths_embeddings()
         X_paths = self.get_Xpaths()
 
-        target_node = 0 # pode ser um parametro?
+        target_node = 0
         node_embeddings = defaultdict(list)
         for walk_index, path in enumerate(X_paths):
             node_embeddings[path[target_node]].append(paths_embeddings[walk_index])
