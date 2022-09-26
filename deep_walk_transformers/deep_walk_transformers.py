@@ -58,6 +58,7 @@ class DeepWalkTransformers():
             self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
         )
         X_paths = self.dataset.get_Xpaths()
+        old_mapping = self.dataset.old_mapping
 
         target_node = 0
         node_embeddings = defaultdict(list)
@@ -83,7 +84,7 @@ class DeepWalkTransformers():
             node_embeddings[path[target_node]].append(paths_embeddings[walk_index])
         
         for target_node in node_embeddings.keys():
-            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
+            node_embeddings[old_mapping[target_node]] = np.array(node_embeddings[target_node]).mean(axis=0)
         
         return node_embeddings
 
