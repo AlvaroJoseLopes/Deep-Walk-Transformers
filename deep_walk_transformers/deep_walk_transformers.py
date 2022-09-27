@@ -71,7 +71,7 @@ class DeepWalkTransformers():
         return node_embeddings
 
     def get_inductive_embeddings(self, G, starting_nodes):
-        inductive_ds = InductiveDataset(self.n_walks, self.walk_len)
+        inductive_ds = InductiveDataset(self.num_walks, self.walk_len)
         encoded_paths, X_positions = inductive_ds.build(G, starting_nodes)
         paths_embeddings = self.mlm_model.get_path_embeddings(
            encoded_paths, X_positions
