@@ -151,9 +151,7 @@ class InductiveDataset():
         self.G_copy = nx.convert_node_labels_to_integers(self.G_copy, label_attribute='old')
         self.old_mapping = nx.get_node_attributes(self.G_copy, 'old')
         self._walk(self.G_copy, starting_nodes)
-        x_masked_train, y_masked_labels, sample_weights = self._prepare(
-            G.number_of_nodes(), standardize
-        )
+        self._prepare(G.number_of_nodes(), standardize)
 
         return self.encoded_paths, self.X_positions
 
