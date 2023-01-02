@@ -1,4 +1,4 @@
-from .data import Dataset, InductiveDataset
+from .data import TransductiveDataset, InductiveDataset
 from .model import MLMBertModel
 from collections import defaultdict
 import numpy as np
@@ -20,7 +20,7 @@ class DeepWalkTransformers():
         self.walk_len = walk_len
         self.mask_rate = mask_rate
         self.embed_dim = embed_dim
-        self.dataset = None
+        self.dataset = None         # TransductiveDataset object
         self.mlm_ds = None          # MLM dataset (Keras Dataset)
         self.mlm_model = None
     
@@ -30,14 +30,15 @@ class DeepWalkTransformers():
         starting_nodes = [],
         batch_size = 128,
         epochs = 5,
-        lr = 0.0001
+        lr = 0.0001,
+        standardize = None
     ):
 
         # Build MLM dataset for fake training
-        self.dataset = Dataset(self.num_walks, self.walk_len, self.mask_rate)
-        self.mlm_ds = self.dataset.build(
-            G, starting_nodes, self.mask_rate, standardize=None, batch_size=batch_size
+        self.dataset = TransductiveDataset(
+            self.num_walks, self.walk_len, self.mask_rate, batch_size
         )
+        self.mlm_ds = self.dataset.build(G, starting_nodes)
 
         # Build BERT MODEL
         self.mlm_model = MLMBertModel(
@@ -61,14 +62,9 @@ class DeepWalkTransformers():
         old_mapping = self.dataset.old_mapping
 
         target_node = 0
-        node_embeddings = defaultdict(list)
-        for walk_index, path in enumerate(X_paths):
-            node_embeddings[old_mapping[path[target_node]]].append(paths_embeddings[walk_index])
-        
-        for target_node in node_embeddings.keys():
-            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
-        
-        return node_embeddings
+        return self._get_embeddings(
+            X_paths, old_mapping, paths_embeddings, target_node
+        )
 
     def get_inductive_embeddings(self, G, starting_nodes):
         inductive_ds = InductiveDataset(self.num_walks, self.walk_len)
@@ -79,20 +75,16 @@ class DeepWalkTransformers():
         X_paths = inductive_ds.get_Xpaths()
         old_mapping = inductive_ds.old_mapping
 
-
         target_node = 0
-        node_embeddings = defaultdict(list)
-        for walk_index, path in enumerate(X_paths):
-            node_embeddings[old_mapping[path[target_node]]].append(paths_embeddings[walk_index])
+        return self._get_embeddings(
+            X_paths, old_mapping, paths_embeddings, target_node
+        )
         
-        for target_node in node_embeddings.keys():
-            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
-        
-        return node_embeddings
 
     # Some public functions that may be useful
     def get_classifier(self):
         return self.mlm_model.get_classifier()
+    
 
     # def get_Xpaths(self):
     #     return self.dataset.get_Xpaths()
@@ -102,3 +94,15 @@ class DeepWalkTransformers():
     #     return self.mlm_model.get_path_embeddings(
     #         self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
     #     )
+
+    def _get_embeddings(
+        self, X_paths, old_mapping, paths_embeddings, target_node=0
+    ):
+        node_embeddings = defaultdict(list)
+        for walk_index, path in enumerate(X_paths):
+            node_embeddings[old_mapping[path[target_node]]].append(paths_embeddings[walk_index])
+        
+        for target_node in node_embeddings.keys():
+            node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)
+        
+        return node_embeddings
