@@ -87,10 +87,10 @@ class Dataset():
             standardize=standardize
         )
 
+        self.mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
+
         print('Encoding texts ...')
         self.encoded_paths = encode(self.X_paths_str, vectorize_layer)
-
-        return vectorize_layer
     
     def get_encoded_paths(self):
         return self.encoded_paths
@@ -108,10 +108,10 @@ class TransductiveDataset(Dataset):
         n_walks = 50,
         walk_len = 10,
         mask_rate = 0.15,
-        standardize = None,
-        batch_size=128
+        batch_size=128,
+        standardize=None
     ):
-        super.__init__(n_walks, walk_len, standardize)
+        super().__init__(n_walks, walk_len, standardize)
         self.mask_rate = mask_rate
         self.mask_token_id = None
         self.batch_size = batch_size
@@ -124,11 +124,10 @@ class TransductiveDataset(Dataset):
         starting_nodes=None, 
     ):
         self._build(G, starting_nodes)
-        vectorize_layer = self._prepare(
+        self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
         )
-        self.mask_token_id = vectorize_layer(["[mask]"]).numpy()[0][0]+3
 
         print(f'Getting masked input (mask token id = {self.mask_token_id}) ...')
         x_masked_train, y_masked_labels, sample_weights = get_masked_input_and_labels(
@@ -143,13 +142,15 @@ class TransductiveDataset(Dataset):
         return self.mlm_ds
 
 
-class InductiveDataset():
+class InductiveDataset(Dataset):
     def __init__(
         self,
         n_walks = 50,
         walk_len = 10,
+        standardize = None
     ):
-        super.__init__(n_walks, walk_len, self.standardize)
+        super().__init__(n_walks, walk_len, standardize)
+        self.special_tokens = ["[mask]"]
 
     def build(
         self,
@@ -157,7 +158,7 @@ class InductiveDataset():
         starting_nodes=None, 
     ):
         self._build(G, starting_nodes)
-        _ = self._prepare(
+        self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
         )

@@ -33,10 +33,11 @@ class DeepWalkTransformers():
         lr = 0.0001,
         standardize = None
     ):
-
+        self.standardize = standardize
         # Build MLM dataset for fake training
         self.dataset = TransductiveDataset(
-            self.num_walks, self.walk_len, self.mask_rate, batch_size
+            self.num_walks, self.walk_len, self.mask_rate, 
+            batch_size, standardize
         )
         self.mlm_ds = self.dataset.build(G, starting_nodes)
 
@@ -67,7 +68,7 @@ class DeepWalkTransformers():
         )
 
     def get_inductive_embeddings(self, G, starting_nodes):
-        inductive_ds = InductiveDataset(self.num_walks, self.walk_len)
+        inductive_ds = InductiveDataset(self.num_walks, self.walk_len, self.standardize)
         encoded_paths, X_positions = inductive_ds.build(G, starting_nodes)
         paths_embeddings = self.mlm_model.get_path_embeddings(
            encoded_paths, X_positions

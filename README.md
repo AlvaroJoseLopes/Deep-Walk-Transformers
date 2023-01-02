@@ -1,10 +1,10 @@
 # Deep-Walk-Transformers
 Node embedding technique based on Masked Language Model.
 
-**A simple example**
+**Transductive Embeddings**
 ----------------------------------------------------------------
 
-You can experiment very easily:
+You can use the provided additional public method `get_transductive_embeddings()` to obtain the embeddings of the nodes used for training.
 
 ```python
 from deep_walk_transformers import DeepWalkTransformers
@@ -16,7 +16,17 @@ dwt = DeepWalkTransformers(
     embed_dim
 )
 dwt.fit(G, starting_nodes, batch_size, epochs, lr)
-node_embeddings = dwt.get_embeddings()
+node_embeddings = dwt.get_transductive_embeddings()
 ```
+**Inductive Embeddings**
+----------------------------------------------------------------
+
+Through the `get_inductive_embeddings()` public method you can get the embeddings of nodes unseen on the training data. The required arguments are the full graph `G_full` ( $G_{train}$ + $G_{unseen}$ )
+
+```python
+inductive_node_embeddings = dwt.get_inductive_embeddings(G_full, starting_nodes)
+
+```
+
 
 See `notebooks` directory for a more complete example.
