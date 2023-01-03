@@ -14,5 +14,10 @@ setuptools.setup(
     url='https://github.com/AlvaroJoseLopes/Deep-Walk-Transformers',
     license='MIT',
     packages=['deep_walk_transformers', 'deep_walk_transformers.utils'],
-    install_requires=[]
+    install_requires=[
+        'graph-walker @ git+https://github.com/AlvaroJoseLopes/graph-walker',
+        'pybind11>=2.10.1',
+        'scipy>=1.9.3',
+        'networkx>=2.8.8',
+    ]
 )
