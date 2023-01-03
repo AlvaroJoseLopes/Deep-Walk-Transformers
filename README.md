@@ -21,12 +21,11 @@ node_embeddings = dwt.get_transductive_embeddings()
 **Inductive Embeddings**
 ----------------------------------------------------------------
 
-Through the `get_inductive_embeddings()` public method you can get the embeddings of nodes unseen on the training data. The required arguments are the full graph `G_full` ( $G_{train}$ + $G_{unseen}$ )
+Through the `get_inductive_embeddings()` public method you can get the embeddings of nodes unseen on the training data. The required arguments are the full graph `G_full` ( $G_{train}$ + $G_{unseen}$ ) and the unseen nodes `starting_nodes`.
 
 ```python
 inductive_node_embeddings = dwt.get_inductive_embeddings(G_full, starting_nodes)
-
 ```
 
 
-See `notebooks` directory for a more complete example.
+See `notebooks` directory for more complete examples.
