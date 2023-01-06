@@ -60,11 +60,10 @@ class DeepWalkTransformers():
             self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
         )
         X_paths = self.dataset.get_Xpaths()
-        old_mapping = self.dataset.old_mapping
 
         target_node = 0
         return self._get_embeddings(
-            X_paths, old_mapping, paths_embeddings, target_node
+            X_paths, paths_embeddings, target_node
         )
 
     def get_inductive_embeddings(self, G, starting_nodes):
@@ -74,11 +73,10 @@ class DeepWalkTransformers():
            encoded_paths, X_positions
         )
         X_paths = inductive_ds.get_Xpaths()
-        old_mapping = inductive_ds.old_mapping
 
         target_node = 0
         return self._get_embeddings(
-            X_paths, old_mapping, paths_embeddings, target_node
+            X_paths, paths_embeddings, target_node
         )
         
 
@@ -97,11 +95,11 @@ class DeepWalkTransformers():
     #     )
 
     def _get_embeddings(
-        self, X_paths, old_mapping, paths_embeddings, target_node=0
+        self, X_paths, paths_embeddings, target_node=0
     ):
         node_embeddings = defaultdict(list)
         for walk_index, path in enumerate(X_paths):
-            node_embeddings[old_mapping[path[target_node]]].append(paths_embeddings[walk_index])
+            node_embeddings[path[target_node]].append(paths_embeddings[walk_index])
         
         for target_node in node_embeddings.keys():
             node_embeddings[target_node] = np.array(node_embeddings[target_node]).mean(axis=0)

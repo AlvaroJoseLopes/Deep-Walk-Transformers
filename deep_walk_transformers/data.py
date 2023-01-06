@@ -22,26 +22,10 @@ class Dataset():
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
         self.encoded_paths = None
-        self.G_copy = None
-        self.old_mapping = None
         self.standardize = standardize
 
     def build(self):
         raise NotImplementedError
-
-    def _build(
-        self,
-        G, 
-        starting_nodes=None, 
-    ):
-        """
-            Builds MLM dataset for fake training.
-        """
-        self.G_copy = G.copy()
-        self.G_copy = nx.convert_node_labels_to_integers(self.G_copy, label_attribute='old')
-        self.old_mapping = nx.get_node_attributes(self.G_copy, 'old')
-        self._walk(self.G_copy, starting_nodes)
-
 
     def _walk(self, G, starting_nodes=None):
 
@@ -123,7 +107,7 @@ class TransductiveDataset(Dataset):
         G, 
         starting_nodes=None, 
     ):
-        self._build(G, starting_nodes)
+        self._walk(G, starting_nodes)
         self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
@@ -157,7 +141,7 @@ class InductiveDataset(Dataset):
         G, 
         starting_nodes=None, 
     ):
-        self._build(G, starting_nodes)
+        self._walk(G, starting_nodes)
         self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
