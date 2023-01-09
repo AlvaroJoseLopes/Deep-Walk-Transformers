@@ -27,23 +27,25 @@ class DeepWalkTransformers():
     def fit(
         self,
         G,
-        starting_nodes = [],
+        features = None,
         batch_size = 128,
         epochs = 5,
         lr = 0.0001,
         standardize = None
     ):
+        if features is not None:
+            (_, self.features_dim) = features.shape
         self.standardize = standardize
         # Build MLM dataset for fake training
         self.dataset = TransductiveDataset(
             self.num_walks, self.walk_len, self.mask_rate, 
             batch_size, standardize
         )
-        self.mlm_ds = self.dataset.build(G, starting_nodes)
+        self.mlm_ds = self.dataset.build(G, features)
 
         # Build BERT MODEL
         self.mlm_model = MLMBertModel(
-            num_head = self.walk_len, ff_dim = self.embed_dim,
+            num_head = self.walk_len, features_dim=self.features_dim, ff_dim = self.embed_dim,
             max_len = self.walk_len, vocab_size = G.number_of_nodes(),
             embed_dim = self.embed_dim, num_layers = 1,
             lr=lr
@@ -57,7 +59,8 @@ class DeepWalkTransformers():
     
     def get_transductive_embeddings(self):
         paths_embeddings = self.mlm_model.get_path_embeddings(
-            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
+            self.dataset.get_encoded_paths(), self.dataset.get_Xpositions(),
+            self.dataset.get_Xfeatures()
         )
         X_paths = self.dataset.get_Xpaths()
 
@@ -66,11 +69,11 @@ class DeepWalkTransformers():
             X_paths, paths_embeddings, target_node
         )
 
-    def get_inductive_embeddings(self, G, starting_nodes):
+    def get_inductive_embeddings(self, G, features, starting_nodes):
         inductive_ds = InductiveDataset(self.num_walks, self.walk_len, self.standardize)
-        encoded_paths, X_positions = inductive_ds.build(G, starting_nodes)
+        encoded_paths, X_positions, X_features = inductive_ds.build(G, features, starting_nodes)
         paths_embeddings = self.mlm_model.get_path_embeddings(
-           encoded_paths, X_positions
+           encoded_paths, X_positions, X_features
         )
         X_paths = inductive_ds.get_Xpaths()
 
@@ -83,16 +86,6 @@ class DeepWalkTransformers():
     # Some public functions that may be useful
     def get_classifier(self):
         return self.mlm_model.get_classifier()
-    
-
-    # def get_Xpaths(self):
-    #     return self.dataset.get_Xpaths()
-
-    # # 'Private' functions        
-    # def _get_paths_embeddings(self):
-    #     return self.mlm_model.get_path_embeddings(
-    #         self.dataset.get_encoded_paths(), self.dataset.get_Xpositions()
-    #     )
 
     def _get_embeddings(
         self, X_paths, paths_embeddings, target_node=0

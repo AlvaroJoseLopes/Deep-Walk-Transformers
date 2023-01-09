@@ -4,15 +4,17 @@ from tensorflow import keras
 from keras import layers
 
 def create_masked_language_bert_model(
-    max_len, vocab_size, embed_dim, num_layers, lr,
-    num_head, ff_dim
+    max_len, features_dim, vocab_size, embed_dim, num_layers, lr,
+    num_head, ff_dim, padding = True
 ):
     inputs = layers.Input((max_len,), dtype=tf.int64)
     inputs2 = layers.Input((max_len,), dtype=tf.int64)
+    inputs3 = layers.Input((features_dim,), dtype=tf.int64)
 
     word_embeddings = layers.Embedding(
         vocab_size, embed_dim, name="word_embedding"
     )(inputs)
+
     position_embeddings = layers.Embedding(
         input_dim=max_len,
         output_dim=embed_dim,
@@ -20,8 +22,15 @@ def create_masked_language_bert_model(
         name="position_embedding",
     )(inputs2) # colocando info estrutural aqui
     #)(tf.range(start=0, limit=config.MAX_LEN, delta=1))
-    embeddings = word_embeddings + position_embeddings
 
+    features_embedding = layers.Dense(
+        embed_dim, name="features_embedding"
+    )(inputs3)
+    features_embedding = layers.Reshape((1, embed_dim))(features_embedding)
+    if padding:
+        features_embedding = layers.ZeroPadding1D((0, max_len-1))(features_embedding)
+
+    embeddings = word_embeddings + position_embeddings + features_embedding
     encoder_output = embeddings
     for i in range(num_layers):
         encoder_output = bert_module(
@@ -32,7 +41,9 @@ def create_masked_language_bert_model(
     mlm_output = layers.Dense(vocab_size, name="mlm_cls", activation="softmax")(
         encoder_output
     )
-    mlm_model = MaskedLanguageModel([inputs,inputs2], mlm_output, name="masked_bert_model")
+    mlm_model = MaskedLanguageModel(
+        [inputs,inputs2,inputs3], mlm_output, name="masked_bert_model"
+    )
 
     optimizer = keras.optimizers.Adamax(learning_rate=lr)
     mlm_model.compile(optimizer=optimizer)
@@ -95,16 +106,16 @@ class MaskedLanguageModel(tf.keras.Model):
     loss_tracker = tf.keras.metrics.Mean(name="loss")   
 
     def train_step(self, inputs):
-        if len(inputs) == 4:
+        if len(inputs) == 5:
             print("eh pra entrar aqui!!!")
-            features, features2, labels, sample_weight = inputs
+            features, features2, features3, labels, sample_weight = inputs
         else:
             print("aqui soh deve entrar pra fine-tuning!")
-            features, features2, labels = inputs
+            features, features2, features3, labels = inputs
             sample_weight = None
 
         with tf.GradientTape() as tape:
-            predictions = self([features,features2], training=True)
+            predictions = self([features,features2,features3], training=True)
             loss = self.loss_fn(labels, predictions, sample_weight=sample_weight)
 
         # Compute gradients

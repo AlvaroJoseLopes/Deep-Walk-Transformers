@@ -12,11 +12,13 @@ class MLMBertModel():
         max_len,
         vocab_size,
         embed_dim = 32,
+        features_dim = None,
         num_layers = 1,
         lr = 0.0001      
     ):
         self.num_head = num_head
         self.embed_dim = embed_dim
+        self.features_dim = features_dim
         self.ff_dim = ff_dim
         self.max_len = max_len
         self.num_layers = num_layers
@@ -27,16 +29,16 @@ class MLMBertModel():
     
     def build(self):
         self.mlm_model = create_masked_language_bert_model(
-            self.max_len, self.vocab_size, self.embed_dim,
+            self.max_len, self.features_dim, self.vocab_size, self.embed_dim,
             self.num_layers, self.lr, self.num_head, self.ff_dim
         )
     
     def train(self, mlm_ds, epochs = 5):
         self.mlm_model.fit(mlm_ds, epochs=epochs)
     
-    def get_path_embeddings(self, encoded_paths, X_positions):
+    def get_path_embeddings(self, encoded_paths, X_positions, X_features):
         self.classifier = self._create_classifier()
-        return self.classifier.predict([encoded_paths, X_positions])
+        return self.classifier.predict([encoded_paths, X_positions,X_features])
 
     def get_classifier(self):
         return self.classifier
@@ -49,9 +51,10 @@ class MLMBertModel():
 
         inputs = layers.Input((self.max_len,), dtype=tf.int64)
         inputs2 = layers.Input((self.max_len,), dtype=tf.int64)
-        sequence_output = pretrained_model([inputs,inputs2])
+        inputs3 = layers.Input((self.features_dim,), dtype=tf.int64)
+        sequence_output = pretrained_model([inputs,inputs2,inputs3])
         outputs = layers.GlobalAveragePooling1D()(sequence_output)
-        classifier = keras.Model([inputs,inputs2], outputs, name="classification")
+        classifier = keras.Model([inputs,inputs2,inputs3], outputs, name="classification")
 
         return classifier
 

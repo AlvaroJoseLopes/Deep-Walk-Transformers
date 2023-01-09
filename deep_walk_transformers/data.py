@@ -18,6 +18,8 @@ class Dataset():
 
         self.n_walks = n_walks
         self.walk_len = walk_len
+        self.features = None
+        self.X_features = []
         self.X_paths = []       # [[1,2], [...], ...]
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
@@ -47,6 +49,8 @@ class Dataset():
             
             X_paths.append(walk)
             X_positions.append(node_positions)
+            if self.features is not None:
+                self.X_features.append(self.features[node_target])
 
         self.X_paths = X_paths
         
@@ -58,6 +62,7 @@ class Dataset():
         ) # ['node_1 node_2', ...]
 
         self.X_positions = np.array(X_positions)
+        self.X_features = np.array(self.X_features)
 
 
     def _prepare(self, vocab_size, special_tokens = None, standardize=None):
@@ -85,6 +90,9 @@ class Dataset():
     def get_Xpaths(self):
         return self.X_paths
 
+    def get_Xfeatures(self):
+        return self.X_features
+
 
 class TransductiveDataset(Dataset):
     def __init__(
@@ -105,9 +113,10 @@ class TransductiveDataset(Dataset):
     def build(
         self,
         G, 
-        starting_nodes=None, 
+        features,
     ):
-        self._walk(G, starting_nodes)
+        self.features = features
+        self._walk(G)
         self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
@@ -119,7 +128,8 @@ class TransductiveDataset(Dataset):
         )
 
         self.mlm_ds = tf.data.Dataset.from_tensor_slices(
-            (x_masked_train, self.X_positions, y_masked_labels, sample_weights)
+            (x_masked_train, self.X_positions, self.X_features,
+             y_masked_labels, sample_weights)
         )
         self.mlm_ds = self.mlm_ds.shuffle(1000).batch(self.batch_size)
 
@@ -138,13 +148,15 @@ class InductiveDataset(Dataset):
 
     def build(
         self,
-        G, 
+        G,
+        features,
         starting_nodes=None, 
     ):
+        self.features = features
         self._walk(G, starting_nodes)
         self._prepare(
             G.number_of_nodes(), special_tokens = self.special_tokens,
             standardize = self.standardize
         )
 
-        return self.encoded_paths, self.X_positions
+        return self.encoded_paths, self.X_positions, self.X_features
