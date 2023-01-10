@@ -9,7 +9,7 @@ def create_masked_language_bert_model(
 ):
     inputs = layers.Input((max_len,), dtype=tf.int64)
     inputs2 = layers.Input((max_len,), dtype=tf.int64)
-    inputs3 = layers.Input((features_dim,), dtype=tf.int64)
+    input_data = [inputs, inputs2]
 
     word_embeddings = layers.Embedding(
         vocab_size, embed_dim, name="word_embedding"
@@ -22,15 +22,21 @@ def create_masked_language_bert_model(
         name="position_embedding",
     )(inputs2) # colocando info estrutural aqui
     #)(tf.range(start=0, limit=config.MAX_LEN, delta=1))
+    embeddings = word_embeddings + position_embeddings
 
-    features_embedding = layers.Dense(
-        embed_dim, name="features_embedding"
-    )(inputs3)
-    features_embedding = layers.Reshape((1, embed_dim))(features_embedding)
-    if padding:
-        features_embedding = layers.ZeroPadding1D((0, max_len-1))(features_embedding)
+    if features_dim != 0:
+        inputs3 = layers.Input((features_dim,), dtype=tf.int64)
+        features_embedding = layers.Dense(
+            embed_dim, name="features_embedding"
+        )(inputs3)
+        features_embedding = layers.Reshape((1, embed_dim))(features_embedding)
+        if padding:
+            features_embedding = layers.ZeroPadding1D((0, max_len-1))(features_embedding)
+        
+        input_data.append(inputs3)
+        embeddings += features_embedding
+        
 
-    embeddings = word_embeddings + position_embeddings + features_embedding
     encoder_output = embeddings
     for i in range(num_layers):
         encoder_output = bert_module(
@@ -42,7 +48,8 @@ def create_masked_language_bert_model(
         encoder_output
     )
     mlm_model = MaskedLanguageModel(
-        [inputs,inputs2,inputs3], mlm_output, name="masked_bert_model"
+        input_data, mlm_output, 
+        has_feature=features_dim != 0, name="masked_bert_model"
     )
 
     optimizer = keras.optimizers.Adamax(learning_rate=lr)
@@ -96,26 +103,38 @@ def get_pos_encoding_matrix(max_len, d_emb):
     return pos_enc
 
 
-
-
-
 class MaskedLanguageModel(tf.keras.Model):
     loss_fn = keras.losses.SparseCategoricalCrossentropy(
         reduction=tf.keras.losses.Reduction.NONE
     )
-    loss_tracker = tf.keras.metrics.Mean(name="loss")   
+    loss_tracker = tf.keras.metrics.Mean(name="loss")
+
+    def __init__(self, *args, **kwargs):
+        self.has_feature = kwargs["has_feature"]
+        del kwargs["has_feature"]
+        super().__init__(*args, **kwargs)
+        self.n_inputs_training = 4 + self.has_feature
 
     def train_step(self, inputs):
-        if len(inputs) == 5:
+        input_features = []
+        if len(inputs) == self.n_inputs_training:
             print("eh pra entrar aqui!!!")
-            features, features2, features3, labels, sample_weight = inputs
+            if self.has_feature:
+                features, features2, features3, labels, sample_weight = inputs
+                input_features = [features, features2, features3]
+            else:
+                features, features2, labels, sample_weight = inputs
+                input_features = [features, features2]
         else:
             print("aqui soh deve entrar pra fine-tuning!")
-            features, features2, features3, labels = inputs
+            if self.has_feature:
+                features, features2, features3, labels = inputs
+            else:
+                features, features2, labels = inputs
             sample_weight = None
 
         with tf.GradientTape() as tape:
-            predictions = self([features,features2,features3], training=True)
+            predictions = self(input_features, training=True)
             loss = self.loss_fn(labels, predictions, sample_weight=sample_weight)
 
         # Compute gradients

@@ -12,7 +12,7 @@ class MLMBertModel():
         max_len,
         vocab_size,
         embed_dim = 32,
-        features_dim = None,
+        features_dim = 0,
         num_layers = 1,
         lr = 0.0001      
     ):
@@ -38,7 +38,10 @@ class MLMBertModel():
     
     def get_path_embeddings(self, encoded_paths, X_positions, X_features):
         self.classifier = self._create_classifier()
-        return self.classifier.predict([encoded_paths, X_positions,X_features])
+        input_data = [encoded_paths, X_positions]
+        if X_features != []: input_data.append(X_features)
+
+        return self.classifier.predict(input_data)
 
     def get_classifier(self):
         return self.classifier
@@ -51,10 +54,14 @@ class MLMBertModel():
 
         inputs = layers.Input((self.max_len,), dtype=tf.int64)
         inputs2 = layers.Input((self.max_len,), dtype=tf.int64)
-        inputs3 = layers.Input((self.features_dim,), dtype=tf.int64)
-        sequence_output = pretrained_model([inputs,inputs2,inputs3])
+        input_data = [inputs, inputs2]
+        if self.features_dim != 0:
+            inputs3 = layers.Input((self.features_dim,), dtype=tf.int64)
+            input_data.append(inputs3)
+
+        sequence_output = pretrained_model(input_data)
         outputs = layers.GlobalAveragePooling1D()(sequence_output)
-        classifier = keras.Model([inputs,inputs2,inputs3], outputs, name="classification")
+        classifier = keras.Model(input_data, outputs, name="classification")
 
         return classifier
 

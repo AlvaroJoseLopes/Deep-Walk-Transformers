@@ -20,6 +20,7 @@ class DeepWalkTransformers():
         self.walk_len = walk_len
         self.mask_rate = mask_rate
         self.embed_dim = embed_dim
+        self.features_dim = 0
         self.dataset = None         # TransductiveDataset object
         self.mlm_ds = None          # MLM dataset (Keras Dataset)
         self.mlm_model = None
@@ -41,7 +42,8 @@ class DeepWalkTransformers():
             self.num_walks, self.walk_len, self.mask_rate, 
             batch_size, standardize
         )
-        self.mlm_ds = self.dataset.build(G, features)
+        self.dataset.build(G, features)
+        self.mlm_ds = self.dataset.get_dataset()
 
         # Build BERT MODEL
         self.mlm_model = MLMBertModel(
@@ -69,9 +71,11 @@ class DeepWalkTransformers():
             X_paths, paths_embeddings, target_node
         )
 
-    def get_inductive_embeddings(self, G, features, starting_nodes):
+    def get_inductive_embeddings(self, G, starting_nodes, features=None):
         inductive_ds = InductiveDataset(self.num_walks, self.walk_len, self.standardize)
-        encoded_paths, X_positions, X_features = inductive_ds.build(G, features, starting_nodes)
+        inductive_ds.build(G, features, starting_nodes)
+        encoded_paths, X_positions, X_features = inductive_ds.get_dataset() 
+        
         paths_embeddings = self.mlm_model.get_path_embeddings(
            encoded_paths, X_positions, X_features
         )

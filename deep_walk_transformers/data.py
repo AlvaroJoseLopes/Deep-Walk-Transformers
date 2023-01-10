@@ -29,6 +29,9 @@ class Dataset():
     def build(self):
         raise NotImplementedError
 
+    def get_dataset(self):
+        raise NotImplementedError
+
     def _walk(self, G, starting_nodes=None):
 
         walks = walker.random_walks(
@@ -127,12 +130,24 @@ class TransductiveDataset(Dataset):
             self.encoded_paths, self.mask_token_id, self.mask_rate
         )
 
-        self.mlm_ds = tf.data.Dataset.from_tensor_slices(
-            (x_masked_train, self.X_positions, self.X_features,
-             y_masked_labels, sample_weights)
-        )
-        self.mlm_ds = self.mlm_ds.shuffle(1000).batch(self.batch_size)
+        dataset = self._get_dataset_tuple(x_masked_train, y_masked_labels, sample_weights)
+        
+        self.mlm_ds = tf.data.Dataset.from_tensor_slices(dataset)\
+                                     .shuffle(1000).batch(self.batch_size)
 
+
+    def _get_dataset_tuple(self, x_masked_train, y_masked_labels, sample_weights):
+        if self.features is not None:
+            return (
+                x_masked_train, self.X_positions, self.X_features,
+                y_masked_labels, sample_weights
+            )
+        else:
+            return (
+                x_masked_train, self.X_positions, y_masked_labels, sample_weights
+            )
+    
+    def get_dataset(self):
         return self.mlm_ds
 
 
@@ -159,4 +174,5 @@ class InductiveDataset(Dataset):
             standardize = self.standardize
         )
 
-        return self.encoded_paths, self.X_positions, self.X_features
+    def get_dataset(self):
+        return self.encoded_paths, self.X_positions, self.X_features 
