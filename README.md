@@ -15,7 +15,7 @@ dwt = DeepWalkTransformers(
     mask_rate,
     embed_dim
 )
-dwt.fit(G, starting_nodes, batch_size, epochs, lr)
+dwt.fit(G, epochs=epochs, lr=lr)
 node_embeddings = dwt.get_transductive_embeddings()
 ```
 **Inductive Embeddings**
@@ -29,7 +29,7 @@ inductive_node_embeddings = dwt.get_inductive_embeddings(G_full, starting_nodes)
 
 **Feature Information**
 ----------------------------------------------------------------
-Additionally you can pass the node features as optional argument to the `fit()` and `get_inductive_embeddings()` functions. For the functions:
+Additionally you can pass the node `features` as optional argument to the `fit()` and `get_inductive_embeddings()` functions. For the functions:
 - **`fit()`**: features argument must be of type `np.ndarray`.
 - **`get_inductive_embeddings()`**: features argument must be `dict(np.array)` where the key is the **node id** and the value is the **feature** as `np.array`.
 
