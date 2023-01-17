@@ -20,6 +20,7 @@ class Dataset():
         self.walk_len = walk_len
         self.features = None
         self.X_features = []
+        self.walks = None
         self.X_paths = []       # [[1,2], [...], ...]
         self.X_paths_str = []   # ['node_1 node_2', '...', ...]
         self.X_positions = []
@@ -34,15 +35,15 @@ class Dataset():
 
     def _walk(self, G, starting_nodes=None):
 
-        walks = walker.random_walks(
+        self.walks = walker.random_walks(
             G, n_walks=self.n_walks, walk_len=self.walk_len, start_nodes=starting_nodes
         )
-        print(f'Walks shape: {walks.shape}')
+        print(f'Walks shape: {self.walks.shape}')
 
-        X_paths = []
-        X_positions = []
+        self.X_paths = []
+        self.X_positions = []
 
-        for walk in tqdm(walks, desc='Building X_paths and X_positions'):
+        for walk in tqdm(self.walks, desc='Building X_paths and X_positions'):
             node_target = walk[0] 
             node_positions = []
             for node in walk:
@@ -50,21 +51,20 @@ class Dataset():
                     nx.shortest_path_length(G, source=node_target, target=node)
                 )
             
-            X_paths.append(walk)
-            X_positions.append(node_positions)
+            self.X_paths.append(walk)
+            self.X_positions.append(node_positions)
             if self.features is not None:
                 self.X_features.append(self.features[node_target])
 
-        self.X_paths = X_paths
         
-        tmp = np.array(
-            list(map(lambda path: list(map(lambda node: f'node_{str(node)}', path)), X_paths))
+        self.X_paths_str = np.array(
+            list(map(lambda path: list(map(lambda node: f'node_{str(node)}', path)), self.X_paths))
         ) # [['node_1', 'node_2']]
         self.X_paths_str = np.array(
-            list(map(lambda x: ' '.join(x), tmp))
+            list(map(lambda x: ' '.join(x), self.X_paths_str))
         ) # ['node_1 node_2', ...]
 
-        self.X_positions = np.array(X_positions)
+        self.X_positions = np.array(self.X_positions)
         self.X_features = np.array(self.X_features)
 
 
@@ -95,6 +95,9 @@ class Dataset():
 
     def get_Xfeatures(self):
         return self.X_features
+
+    def get_walks(self):
+        return self.walks
 
 
 class TransductiveDataset(Dataset):

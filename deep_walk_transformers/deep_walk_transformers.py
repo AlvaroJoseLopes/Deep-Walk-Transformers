@@ -91,6 +91,9 @@ class DeepWalkTransformers():
     def get_classifier(self):
         return self.mlm_model.get_classifier()
 
+    def get_walks(self):
+        return self.dataset.get_walks()
+
     def _get_embeddings(
         self, X_paths, paths_embeddings, target_node=0
     ):
