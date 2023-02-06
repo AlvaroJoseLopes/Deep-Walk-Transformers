@@ -19,5 +19,7 @@ setuptools.setup(
         'pybind11>=2.10.1',
         'scipy>=1.9.3',
         'networkx>=2.8.8',
+        'tensorflow',
+        'keras'
     ]
 )
