@@ -2,6 +2,8 @@ from .data import TransductiveDataset, InductiveDataset
 from .model import MLMBertModel
 from collections import defaultdict
 import numpy as np
+from keras.callbacks import EarlyStopping
+
 
 class DeepWalkTransformers():
     """
@@ -32,7 +34,9 @@ class DeepWalkTransformers():
         batch_size = 128,
         epochs = 5,
         lr = 0.0001,
-        standardize = None
+        standardize = None,
+        min_delta=0,
+        patience=0
     ):
         if features is not None:
             (_, self.features_dim) = features.shape
@@ -57,7 +61,10 @@ class DeepWalkTransformers():
         self.mlm_model.build()
         
         print('Fake Training MLM model ... ')
-        self.mlm_model.train(self.mlm_ds, epochs)
+        early_stopping = EarlyStopping(
+            monitor='loss', mode='min', min_delta=min_delta, patience=patience
+        )
+        self.mlm_model.train(self.mlm_ds, epochs, callbacks=[early_stopping])
     
     def get_transductive_embeddings(self):
         paths_embeddings = self.mlm_model.get_path_embeddings(

@@ -33,8 +33,8 @@ class MLMBertModel():
             self.num_layers, self.lr, self.num_head, self.ff_dim
         )
     
-    def train(self, mlm_ds, epochs = 5):
-        self.mlm_model.fit(mlm_ds, epochs=epochs)
+    def train(self, mlm_ds, epochs = 5, callbacks=[]):
+        self.mlm_model.fit(mlm_ds, epochs=epochs, callbacks=callbacks)
     
     def get_path_embeddings(self, encoded_paths, X_positions, X_features):
         self.classifier = self._create_classifier()
