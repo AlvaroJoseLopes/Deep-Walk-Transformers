@@ -62,7 +62,8 @@ class DeepWalkTransformers():
         
         print('Fake Training MLM model ... ')
         early_stopping = EarlyStopping(
-            monitor='loss', mode='min', min_delta=min_delta, patience=patience
+            monitor='loss', mode='min', min_delta=min_delta, patience=patience,
+            restore_best_weights=True
         )
         self.mlm_model.train(self.mlm_ds, epochs, callbacks=[early_stopping])
     
