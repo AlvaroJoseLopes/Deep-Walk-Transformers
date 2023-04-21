@@ -48,7 +48,7 @@ class DeepWalkTransformers():
         # Build BERT MODEL
         self.mlm_model = MLMBertModel(
             num_head = self.walk_len, features_dim=self.features_dim, ff_dim = self.embed_dim,
-            max_len = self.walk_len, vocab_size = G.number_of_nodes(),
+            max_len = self.walk_len, vocab_size = G.number_of_nodes()+2,
             embed_dim = self.embed_dim, num_layers = 1,
             lr=lr
         )
